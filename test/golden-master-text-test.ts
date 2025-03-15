@@ -1,16 +1,16 @@
-import { Item, GildedRose, AgedBrieItem, SulfurasItem, BackstagePassesItem } from '../app/gilded-rose';
+import { GildedRose, AgedBrieItem, SulfurasItem, BackstagePassesItem, GeneralItem, ConjuredItem } from '../app/gilded-rose';
 
 const items = [
-  new Item("+5 Dexterity Vest", 10, 20),
+  new GeneralItem("+5 Dexterity Vest", 10, 20),
   new AgedBrieItem(2, 0),
-  new Item("Elixir of the Mongoose", 5, 7),
+  new GeneralItem("Elixir of the Mongoose", 5, 7),
   new SulfurasItem(),
   new SulfurasItem(),
   new BackstagePassesItem(15, 20),
   new BackstagePassesItem(10, 49),
   new BackstagePassesItem(5, 49),
-  // this conjured item does not work properly yet
-  new Item("Conjured Mana Cake", 3, 6)];
+  ConjuredItem.from(new GeneralItem("Mana Cake", 3, 6))
+];
 
 
 const gildedRose = GildedRose.from(items);

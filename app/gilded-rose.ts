@@ -1,12 +1,13 @@
-export class Item {
+
+abstract class Item {
   constructor(protected _name: string, protected _sellIn: number,  protected _quality: number) {
     _quality = this.normalizeQuality(_quality);
   }
-
+  
   protected normalizeQuality(quality: number) {
     return Math.min(50, Math.max(0, quality));
   }
-  protected nextDay(): void {
+  private nextDay(): void {
     this._sellIn--;
   }
 
@@ -18,18 +19,58 @@ export class Item {
   }
 
   public get sellIn(): number {
-    return this._sellIn
+    return this._sellIn;
   }
 
   public get name(): string {
-    return this._name
+    return this._name;
   }
 
-  public updateQuality(): this {
-    this.quality = this.quality - (this.sellIn < 0 ? 2 : 1);
-    this.nextDay();
+  public performDay(): Item {
+    this.updateQuality();
+    this.nextDay()
     return this;
+  }
+
+  public abstract updateQuality(): void;
+}
+export class GeneralItem extends Item {
+  constructor(protected _name: string, protected _sellIn: number,  protected _quality: number) {
+    super( _name, _sellIn, _quality)
+  }
+
+  public updateQuality(): void {
+    this.quality = this.quality - (this.sellIn < 0 ? 2 : 1);
   };
+}
+
+export class ConjuredItem<T extends Item> extends Item {
+  private readonly CONJURED_MULTIPLIER: number = 2;
+
+  constructor(private _item: T) {
+    super(`Conjured ${_item.name}`, _item.sellIn, _item.quality)
+
+    _item.performDay = _item.performDay.bind(this);
+    _item.updateQuality = _item.updateQuality.bind(this);
+  }
+
+  public static from<T extends Item>(item: T): ConjuredItem<T> {
+    return new ConjuredItem(item);
+  }
+
+  public get item() {
+    return this._item;
+  }
+
+  public updateQuality(): void {
+    for(let i = 0; i < this.CONJURED_MULTIPLIER; i++) {
+      this.item.updateQuality();
+    }
+  }
+
+  public performDay(): Item {
+    return this.item.performDay()
+  }
 }
 
 export class SulfurasItem extends Item {
@@ -47,7 +88,6 @@ export class AgedBrieItem extends Item {
   }
   public updateQuality(): this {
     this.quality = this.quality + (this.sellIn < 0 ? 2 : 1);
-    this.nextDay();
     return this;
   }
 }
@@ -65,7 +105,6 @@ export class BackstagePassesItem extends Item {
           this.quality + 3 :
         this.quality + 2 :
       this.quality;
-    this.nextDay();
     return this;
   }
 }
@@ -78,6 +117,6 @@ export class GildedRose {
   }
 
   updateQuality(): Array<Item> {
-    return this.items.map(x => x.updateQuality());
+    return this.items.map(x => x.performDay());
   }
 }
